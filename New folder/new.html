@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل بيانات </title>
+    <style>
+        body {
+            /* وضع الصورة كخلفية مع طبقة تغميق بسيطة */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+                              url('file.jpg'); /* تأكدي أن اسم ملف الصورة صح */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.85); /* خلفية بيضاء شفافة */
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            width: 90%;
+            max-width: 400px;
+            backdrop-filter: blur(10px); /* تأثير الزجاج الضبابي */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 1.5rem;
+            font-size: 24px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2c5282;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #2a4365;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>تسجيل البيانات</h2>
+    <form id="studentForm">
+        <input type="text" id="name" placeholder="الاسم الكامل" required>
+        
+        <input type="tel" id="phone" placeholder="رقم التليفون (11 رقم)" 
+               pattern="01[0125][0-9]{8}" 
+               title="يجب أن يبدأ بـ 01 ويتكون من 11 رقم" required>
+        
+        <input type="text" id="faculty" placeholder="الكلية" required>
+        <input type="text" id="uni" placeholder="الجامعة" required>
+        <input type="text" id="area" placeholder="المنطقة" required>
+        
+        <select id="role">
+            <option value="مخدوم">مخدوم</option>
+            <option value="خادم">خادم</option>
+        </select>
+        
+        <button type="submit" id="submitBtn">إرسال البيانات</button>
+        <p id="msg" class="status-msg"></p>
+    </form>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxg1af08yK-yi9sROSGj3oE9ppUU1rykMEOyTK4TSkqpChod9ED7XTyjE_VFo3GXZ5D/exec';
+    const form = document.getElementById('studentForm');
+    const btn = document.getElementById('submitBtn');
+    const msg = document.getElementById('msg');
+
+    // 1. ملء البيانات تلقائياً لو مسجلة قبل كده
+    window.onload = () => {
+        const saved = localStorage.getItem('studentData');
+        if (saved) {
+            const d = JSON.parse(saved);
+            document.getElementById('name').value = d.name || '';
+            document.getElementById('phone').value = d.phone || '';
+            document.getElementById('faculty').value = d.faculty || '';
+            document.getElementById('uni').value = d.uni || '';
+            document.getElementById('area').value = d.area || '';
+            document.getElementById('role').value = d.role || '';
+            msg.innerText = "مرحباً بعودتك! تم ملء بياناتك تلقائياً.";
+        }
+    };
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.innerText = "جاري الإرسال...";
+
+        const data = {
+            name: document.getElementById('name').value,
+            phone: document.getElementById('phone').value,
+            faculty: document.getElementById('faculty').value,
+            uni: document.getElementById('uni').value,
+            area: document.getElementById('area').value,
+            role: document.getElementById('role').value
+        };
+
+        // حفظ البيانات في المتصفح للمرة القادمة
+        localStorage.setItem('studentData', JSON.stringify(data));
+
+        fetch(scriptURL, {
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            alert("تم تسجيل بياناتك بنجاح!");
+            btn.disabled = false;
+            btn.innerText = "إرسال البيانات";
+            msg.innerText = "تم الإرسال وتحديث بياناتك المحفوظة.";
+        })
+        .catch(error => {
+            alert("خطأ في الإرسال، حاول ثانية");
+            btn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
